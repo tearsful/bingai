@@ -15,12 +15,12 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_USERNAME: hf4all
+          HF_USERNAME: tearsful
           SPACE_NAME: bingo
         run: |
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME huggingface
           cd huggingface
-          git config user.name hf4all
-          git config user.email hf4all@gmail.com
+          git config user.name tearsful
+          git config user.email tearsful@foxmail.com
           git commit -am "auto build" --amend
           git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME main -f
