@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAtom } from 'jotai'
 import { Switch } from '@headlessui/react'
 import { toast } from 'react-hot-toast'
-import { hashAtom, voiceAtom } from '@/state'
+import { hashAtom, historyAtom, voiceAtom } from '@/state'
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ export function Settings() {
   const [loc, setLoc] = useAtom(hashAtom)
   const [curlValue, setCurlValue] = useState(extraCurlFromCookie(parseCookies(document.cookie, ChunkKeys)))
   const [imageOnly, setImageOnly] = useState(getCookie('IMAGE_ONLY') !== '0')
+  const [enabledHistory, setHistory] = useAtom(historyAtom)
   const [enableTTS, setEnableTTS] = useAtom(voiceAtom)
 
   useEffect(() => {
@@ -30,6 +31,24 @@ export function Settings() {
       toast.success('复制成功')
     }
   }, [isCopied])
+
+  const handleSwitchImageOnly = useCallback((checked: boolean) => {
+    let headerValue = curlValue
+    if (headerValue) {
+      try {
+        headerValue = atob(headerValue)
+      } catch (e) { }
+      if (!/^\s*curl ['"]https:\/\/(www|cn)\.bing\.com\/turing\/captcha\/challenge['"]/.test(headerValue)) {
+        toast.error('请先配置链接')
+        return
+      }
+      if (RegExp.$1 === 'cn' && checked === false) {
+        toast.error('你配置的中文域名 cn.bing.com 仅支持画图')
+        return
+      }
+      setImageOnly(checked)
+    }
+  }, [curlValue])
 
   if (loc === 'settings') {
     return (
@@ -61,17 +80,32 @@ export function Settings() {
             onChange={e => setCurlValue(e.target.value)}
           />
           <div className="flex gap-2">
-            身份信息仅用于画图（推荐）
             <Switch
               checked={imageOnly}
               className={`${imageOnly ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full`}
-              onChange={(checked: boolean) => setImageOnly(checked)}
+              onChange={(checked: boolean) => handleSwitchImageOnly(checked)}
             >
               <span
                 className={`${imageOnly ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}
               />
             </Switch>
+            身份信息仅用于画图
           </div>
+
+          {!imageOnly && (
+            <div className="flex gap-2">
+              <Switch
+                checked={enabledHistory}
+                className={`${enabledHistory ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full`}
+                onChange={(checked: boolean) => setHistory(checked)}
+              >
+                <span
+                  className={`${enabledHistory ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                />
+              </Switch>
+              启用历史记录
+            </div>
+          )}
 
           <Button variant="ghost" className="bg-[#F5F5F5] hover:bg-[#F2F2F2]" onClick={() => copyToClipboard(btoa(curlValue))}>
             转成 BING_HEADER 并复制
