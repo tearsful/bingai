@@ -20,7 +20,7 @@ jobs:
         run: |
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME huggingface
           cd huggingface
-          git config user.name tearsful
-          git config user.email tearsful@foxmail.com
+          git config user.name hf4all
+          git config user.email hf4all@gmail.com
           git commit -am "auto build" --amend
           git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME main -f
